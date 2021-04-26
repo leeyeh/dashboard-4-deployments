@@ -1,14 +1,16 @@
 const fetch = require("node-fetch");
 const memo = require("memoizee");
+const { Octokit, App, Action } = require("octokit");
 
-const ENGINE_ENVS = process.env.ENGINE_ENVS;
 const LC_ACCESS_TOKEN = process.env.LC_ACCESS_TOKEN;
+const ENGINE_ENVS = process.env.ENGINE_ENVS;
+const envs = ENGINE_ENVS.split(",").map((env) => env.split("/"));
+console.log(envs);
+
 const GHP_ACCESS_TOKEN = process.env.GHP_ACCESS_TOKEN;
 const GH_REPO = process.env.GH_REPO;
-
-const envs = ENGINE_ENVS.split(",").map((env) => env.split("/"));
-
-console.log(envs);
+const octokit = new Octokit({ auth: GHP_ACCESS_TOKEN });
+const [owner, repo] = GH_REPO.split("/");
 
 const LC_API_DOMAINS = {
   "cn-n1": "cn-n1-console-api.leancloud.cn",
@@ -23,7 +25,7 @@ const LC_CONSOLE_DOMAINS = {
 
 const fetchGroups = memo(
   async (region, appId) => {
-    console.log(`request: ${region}/${appId}`);
+    console.log(`Fetching groups: ${region}/${appId}`);
     return (
       await fetch(`https://${LC_API_DOMAINS[region]}/1.1/engine/groups`, {
         headers: {
@@ -35,6 +37,20 @@ const fetchGroups = memo(
   },
   {
     maxAge: 10000,
+  }
+);
+
+const fetchCommit = memo(
+  async (sha) => {
+    console.log(`Fetching commit: ${sha}`);
+    return octokit.rest.repos.getCommit({
+      owner,
+      repo,
+      ref: sha,
+    });
+  },
+  {
+    max: 1000,
   }
 );
 
@@ -74,10 +90,20 @@ export default async (req, res) => {
             error: `Not deployed`,
           };
         }
+        const version = env.version?.version || "";
+        let sha;
+        if (version.indexOf("git:") === 0) {
+          sha = version.slice(4);
+        }
+        const commit = await fetchCommit(sha);
         return {
           name: alias,
           deployedAt: env.deployedAt,
-          commit: env.version?.version,
+          commit: {
+            committedAt: commit.data.commit.committer.date,
+            sha,
+            message: commit.data.commit.message.slice(0, 16) + "...",
+          },
         };
       }
     )
