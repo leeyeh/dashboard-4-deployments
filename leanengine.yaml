@@ -1,0 +1,1 @@
+afterBuild: npm run build
