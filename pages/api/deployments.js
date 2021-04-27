@@ -3,6 +3,7 @@ const memo = require("memoizee");
 const { Octokit, App, Action } = require("octokit");
 
 const LC_ACCESS_TOKEN = process.env.LC_ACCESS_TOKEN;
+const LC_ACCESS_TOKEN_US = process.env.LC_ACCESS_TOKEN_US;
 const ENGINE_ENVS = process.env.ENGINE_ENVS;
 const envs = ENGINE_ENVS.split(",").map((env) => env.split("/"));
 console.log(envs);
@@ -23,13 +24,19 @@ const LC_CONSOLE_DOMAINS = {
   "us-w1": "console.leancloud.app",
 };
 
+const LC_TOKENS = {
+  "cn-n1": LC_ACCESS_TOKEN,
+  "cn-e1": LC_ACCESS_TOKEN,
+  "us-w1": LC_ACCESS_TOKEN_US,
+}
+
 const fetchGroups = memo(
   async (region, appId) => {
     console.log(`Fetching groups: ${region}/${appId}`);
     return (
       await fetch(`https://${LC_API_DOMAINS[region]}/1.1/engine/groups`, {
         headers: {
-          Authorization: `Bearer ${LC_ACCESS_TOKEN}`,
+          Authorization: `Bearer ${LC_TOKENS[region]}`,
           "X-LC-ID": appId,
         },
       })
