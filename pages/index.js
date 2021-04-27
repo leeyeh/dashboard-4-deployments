@@ -61,7 +61,10 @@ export default function Home({ repo }) {
                       </h3>
                     </a>
                     {commit && (
-                      <a href={`https://github.com/${repo}`} target="_blank">
+                      <a
+                        href={`https://github.com/${repo}/commits/${sha}`}
+                        target="_blank"
+                      >
                         <p className={styles.line}>
                           <span
                             className={styles.shaVisaulized}
