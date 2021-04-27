@@ -28,7 +28,7 @@ const LC_TOKENS = {
   "cn-n1": LC_ACCESS_TOKEN,
   "cn-e1": LC_ACCESS_TOKEN,
   "us-w1": LC_ACCESS_TOKEN_US,
-}
+};
 
 const fetchGroups = memo(
   async (region, appId) => {
@@ -98,20 +98,21 @@ export default async (req, res) => {
           };
         }
         const version = env.version?.version || "";
-        let sha;
+        let sha, commit;
         if (version.indexOf("git:") === 0) {
           sha = version.slice(4);
+          const { data } = await fetchCommit(sha);
+          commit = {
+            committedAt: data.commit.committer.date,
+            sha,
+            message: data.commit.message.slice(0, 16) + "...",
+          };
         }
-        const commit = await fetchCommit(sha);
         return {
           name: alias,
           deployedAt: env.deployedAt,
           url: `https://${LC_CONSOLE_DOMAINS[region]}/apps/${appId}/engine/groups/${groupName}/deploy`,
-          commit: {
-            committedAt: commit.data.commit.committer.date,
-            sha,
-            message: commit.data.commit.message.slice(0, 16) + "...",
-          },
+          commit,
         };
       }
     )
