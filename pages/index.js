@@ -1,65 +1,105 @@
-import Head from 'next/head'
-import styles from '../styles/Home.module.css'
+import Head from "next/head";
+import styles from "../styles/Home.module.css";
+import useSWR, { SWRConfig } from "swr";
+import { DateTime } from "luxon";
 
-export default function Home() {
+export async function getStaticProps() {
+  return {
+    props: {
+      repo: process.env.NEXT_PUBLIC_GH_REPO,
+    },
+  };
+}
+
+const formatTime = (ISOTime) => {
+  const dateTime = DateTime.fromISO(ISOTime);
+  const diffDays = dateTime.diffNow(["days", "hours"]).toObject().days;
+  const format =
+    diffDays === 0 ? DateTime.TIME_SIMPLE : DateTime.DATETIME_SHORT;
+  return `${dateTime.toLocaleString(format)} (${dateTime.toRelative()})`;
+};
+
+export default function Home({ repo }) {
+  const { data: deployments, error } = useSWR("/api/deployments");
+
   return (
-    <div className={styles.container}>
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+    <SWRConfig
+      value={{
+        refreshInterval: 10000,
+        fetcher: (...args) => fetch(...args).then((res) => res.json()),
+      }}
+    >
+      <div className={styles.container}>
+        <Head>
+          <title>Create Next App</title>
+          <link rel="icon" href="/favicon.ico" />
+        </Head>
 
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
+        <main className={styles.main}>
+          {deployments ? (
+            <div className={styles.grid}>
+              {deployments.map((deployment) => {
+                const {
+                  name,
+                  deployedAt,
+                  url,
+                  commit,
+                  commit: { committedAt, sha, message } = {},
+                } = deployment;
+                return (
+                  <div className={styles.card} key={name}>
+                    <a href={url} target="_blank">
+                      <h3 className={styles.line}>
+                        {name}
+                        <span className={styles.fill} />
+                        <span className={styles.meta}>
+                          {deployedAt
+                            ? `deployed at ${formatTime(deployedAt)}`
+                            : "not deployed"}
+                        </span>
+                        &nbsp;&rarr;
+                      </h3>
+                    </a>
+                    {commit && (
+                      <a href={`https://github.com/${repo}`} target="_blank">
+                        <p className={styles.line}>
+                          <span
+                            className={styles.shaVisaulized}
+                            style={{ background: `#${sha.slice(0, 8)}` }}
+                          ></span>
+                          <span className={styles.sha}>{sha.slice(0, 7)}</span>{" "}
+                          <span>{message}</span>
+                          <span className={styles.fill} />
+                          <span className={styles.meta}>
+                            {`committed at ${formatTime(committedAt)}`}
+                          </span>
+                          &nbsp;&rarr;
+                        </p>
+                      </a>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            "loading..."
+          )}
+        </main>
 
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
+        <footer className={styles.footer}>
+          dashboard 4{" "}
+          <a href={`https://github.com/${repo}`} target="_blank">
+            {repo}
           </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
+          |
           <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
+            href="https://github.com/leeyeh/dashboard-4-deployments"
+            target="_blank"
           >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
+            source code
           </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
-      </footer>
-    </div>
-  )
+        </footer>
+      </div>
+    </SWRConfig>
+  );
 }

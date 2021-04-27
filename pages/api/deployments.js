@@ -1,6 +1,6 @@
 const fetch = require("node-fetch");
 const memo = require("memoizee");
-const { Octokit, App, Action } = require("octokit");
+const { Octokit } = require("octokit");
 
 const LC_ACCESS_TOKEN = process.env.LC_ACCESS_TOKEN;
 const LC_ACCESS_TOKEN_US = process.env.LC_ACCESS_TOKEN_US;
@@ -9,7 +9,7 @@ const envs = ENGINE_ENVS.split(",").map((env) => env.split("/"));
 console.log(envs);
 
 const GHP_ACCESS_TOKEN = process.env.GHP_ACCESS_TOKEN;
-const GH_REPO = process.env.GH_REPO;
+const GH_REPO = process.env.NEXT_PUBLIC_GH_REPO;
 const octokit = new Octokit({ auth: GHP_ACCESS_TOKEN });
 const [owner, repo] = GH_REPO.split("/");
 
@@ -20,7 +20,7 @@ const LC_API_DOMAINS = {
 };
 const LC_CONSOLE_DOMAINS = {
   "cn-n1": "console.leancloud.cn",
-  "cn-e1": "e1-console.leancloud.cn",
+  "cn-e1": "console-e1.leancloud.cn",
   "us-w1": "console.leancloud.app",
 };
 
@@ -106,6 +106,7 @@ export default async (req, res) => {
         return {
           name: alias,
           deployedAt: env.deployedAt,
+          url: `https://${LC_CONSOLE_DOMAINS[region]}/apps/${appId}/engine/groups/${groupName}/deploy`,
           commit: {
             committedAt: commit.data.commit.committer.date,
             sha,
