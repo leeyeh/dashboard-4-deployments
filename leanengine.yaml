@@ -1,1 +1,2 @@
 afterBuild: npm run build
+exposeEnvironmentsOnBuild: true
