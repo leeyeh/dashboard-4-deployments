@@ -11,11 +11,11 @@ export async function getStaticProps() {
   };
 }
 
-const MAX_HOURS = 24 * 30;
+const MAX_HOURS = (24 * 30) / 0.64;
 const getOpacity = (ISOTime) => {
   const dateTime = DateTime.fromISO(ISOTime);
   const diffHours = dateTime.diffNow(["hours"]).toObject().hours;
-  return Math.max(0.2, 1 + diffHours / MAX_HOURS);
+  return Math.max(0.2, 1 - Math.pow(-diffHours / MAX_HOURS, 0.5));
 };
 
 const formatTime = (ISOTime) => {
