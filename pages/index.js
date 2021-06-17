@@ -11,6 +11,13 @@ export async function getStaticProps() {
   };
 }
 
+const MAX_HOURS = 24 * 30;
+const getOpacity = (ISOTime) => {
+  const dateTime = DateTime.fromISO(ISOTime);
+  const diffHours = dateTime.diffNow(["hours"]).toObject().hours;
+  return Math.max(0.2, 1 + diffHours / MAX_HOURS);
+};
+
 const formatTime = (ISOTime) => {
   const dateTime = DateTime.fromISO(ISOTime);
   const diffDays = dateTime.diffNow(["days", "hours"]).toObject().days;
@@ -49,7 +56,10 @@ export default function Home({ repo }) {
                 return (
                   <div className={styles.card} key={name}>
                     <a href={url} target="_blank">
-                      <h3 className={styles.line}>
+                      <h3
+                        style={{ opacity: getOpacity(deployedAt) }}
+                        className={styles.line}
+                      >
                         {name}
                         <span className={styles.fill} />
                         <span className={styles.meta}>
@@ -65,10 +75,13 @@ export default function Home({ repo }) {
                         href={`https://github.com/${repo}/commits/${sha}`}
                         target="_blank"
                       >
-                        <p className={styles.line}>
+                        <p
+                          style={{ opacity: getOpacity(committedAt) }}
+                          className={styles.line}
+                        >
                           <span
                             className={styles.shaVisaulized}
-                            style={{ background: `#${sha.slice(0, 8)}` }}
+                            style={{ background: `#${sha.slice(0, 6)}` }}
                           ></span>
                           <span className={styles.sha}>{sha.slice(0, 7)}</span>{" "}
                           <span>{message}</span>
