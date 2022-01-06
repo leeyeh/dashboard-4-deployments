@@ -33,7 +33,7 @@ const LC_TOKENS = {
 const fetchGroups = memo(
   async (region, appId) => {
     console.log(`Fetching groups: ${region}/${appId}`);
-    return (
+    const data = (
       await fetch(`https://${LC_API_DOMAINS[region]}/1.1/engine/groups`, {
         headers: {
           Authorization: `Bearer ${LC_TOKENS[region]}`,
@@ -41,6 +41,8 @@ const fetchGroups = memo(
         },
       })
     ).json();
+    console.log(`Fetched: ${region}/${appId}`);
+    return data;
   },
   {
     maxAge: 10000,
@@ -50,11 +52,13 @@ const fetchGroups = memo(
 const fetchCommit = memo(
   async (sha) => {
     console.log(`Fetching commit: ${sha}`);
-    return octokit.rest.repos.getCommit({
+    const data = await octokit.rest.repos.getCommit({
       owner,
       repo,
       ref: sha,
     });
+    console.log(`Fetched: ${sha} (${data.data.commit.message.split('\n')[0]})`);
+    return data;
   },
   {
     max: 1000,
