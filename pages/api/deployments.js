@@ -1,6 +1,7 @@
 const fetch = require("node-fetch");
 const memo = require("memoizee");
 const { Octokit } = require("octokit");
+const md5 = require("md5");
 
 const LC_ACCESS_TOKEN = process.env.LC_ACCESS_TOKEN;
 const LC_ACCESS_TOKEN_US = process.env.LC_ACCESS_TOKEN_US;
@@ -30,18 +31,21 @@ const LC_TOKENS = {
   "us-w1": LC_ACCESS_TOKEN_US,
 };
 
-const fetchGroups = memo(
-  async (region, appId) => {
-    console.log(`Fetching groups: ${region}/${appId}`);
+const fetchDeployments = memo(
+  async (region, appId, groupName) => {
+    console.log(`Fetching deployment: ${region}/${appId}/${groupName}`);
     const data = (
-      await fetch(`https://${LC_API_DOMAINS[region]}/1.1/engine/groups`, {
-        headers: {
-          Authorization: `Bearer ${LC_TOKENS[region]}`,
-          "X-LC-ID": appId,
-        },
-      })
+      await fetch(
+        `https://${LC_API_DOMAINS[region]}/1.1/engine/groups/${groupName}/deployments`,
+        {
+          headers: {
+            Authorization: `Bearer ${LC_TOKENS[region]}`,
+            "X-LC-ID": appId,
+          },
+        }
+      )
     ).json();
-    console.log(`Fetched: ${region}/${appId}`);
+    console.log(`Fetched: ${region}/${appId}/${groupName}`);
     return data;
   },
   {
@@ -57,7 +61,7 @@ const fetchCommit = memo(
       repo,
       ref: sha,
     });
-    console.log(`Fetched: ${sha} (${data.data.commit.message.split('\n')[0]})`);
+    console.log(`Fetched: ${sha} (${data.data.commit.message.split("\n")[0]})`);
     return data;
   },
   {
@@ -66,8 +70,8 @@ const fetchCommit = memo(
 );
 
 const ENV_MAP = {
-  stg: "staging",
-  prod: "production",
+  stg: 0,
+  prod: 1,
 };
 
 export default async (req, res) => {
@@ -80,28 +84,25 @@ export default async (req, res) => {
         envName,
         alias = `${region}/${appId.slice(0, 8)}/${groupName}/${envName}`,
       ]) => {
-        const groups = await fetchGroups(region, appId);
-        const matchedGroup = groups.find(
-          (group) => group.groupName === groupName
+        const deployments = await fetchDeployments(region, appId, groupName);
+
+        const matchedDeployment = deployments.find(
+          (deployment) =>
+            deployment.prod === ENV_MAP[envName] &&
+            deployment.status === "success"
         );
-        if (!matchedGroup)
+        if (!matchedDeployment)
           return {
             name: alias,
-            error: `Group not found`,
+            error: `Deployment not found`,
           };
-        const env = matchedGroup[ENV_MAP[envName]];
-        if (!env)
-          return {
-            name: alias,
-            error: `Enviroment not found`,
-          };
-        if (!env?.version) {
+        if (!matchedDeployment.version) {
           return {
             name: alias,
             error: `Not deployed`,
           };
         }
-        const version = env.version?.version || "";
+        const version = matchedDeployment.version?.version || "";
         let sha, commit;
         if (version.indexOf("git:") === 0) {
           sha = version.slice(4);
@@ -110,11 +111,21 @@ export default async (req, res) => {
             committedAt: data.commit.committer.date,
             sha,
             message: data.commit.message.slice(0, 16) + "...",
+            author: {
+              gravatarhash: md5(data.commit.author.email),
+              name: data.commit.author.name,
+            },
           };
         }
         return {
           name: alias,
-          deployedAt: env.deployedAt,
+          deployedAt: matchedDeployment.deployedAt,
+          author: matchedDeployment.deployedBy
+            ? {
+                gravatarhash: matchedDeployment.deployedBy.emailMd5,
+                name: matchedDeployment.deployedBy.username,
+              }
+            : undefined,
           url: `https://${LC_CONSOLE_DOMAINS[region]}/apps/${appId}/engine/groups/${groupName}/deploy`,
           commit,
         };

@@ -50,8 +50,14 @@ export default function Home({ repo }) {
                   name,
                   deployedAt,
                   url,
+                  author,
                   commit,
-                  commit: { committedAt, sha, message } = {},
+                  commit: {
+                    committedAt,
+                    sha,
+                    message,
+                    author: commitAuthor,
+                  } = {},
                 } = deployment;
                 return (
                   <div className={styles.card} key={name}>
@@ -63,9 +69,19 @@ export default function Home({ repo }) {
                         {name}
                         <span className={styles.fill} />
                         <span className={styles.meta}>
-                          {deployedAt
-                            ? `deployed at ${formatTime(deployedAt)}`
-                            : "not deployed"}
+                          {deployedAt ? (
+                            <>
+                              {author && (
+                                <Gravatar
+                                  hash={author.gravatarhash}
+                                  alt={author.name}
+                                />
+                              )}{" "}
+                              deployed at {`${formatTime(deployedAt)}`}
+                            </>
+                          ) : (
+                            "not deployed"
+                          )}
                         </span>
                         &nbsp;&rarr;
                       </h3>
@@ -87,6 +103,12 @@ export default function Home({ repo }) {
                           <span>{message}</span>
                           <span className={styles.fill} />
                           <span className={styles.meta}>
+                            {commitAuthor && (
+                              <Gravatar
+                                hash={commitAuthor.gravatarhash}
+                                alt={commitAuthor.name}
+                              />
+                            )}{" "}
                             {`committed at ${formatTime(committedAt)}`}
                           </span>
                           &nbsp;&rarr;
@@ -119,3 +141,16 @@ export default function Home({ repo }) {
     </SWRConfig>
   );
 }
+
+const Gravatar = ({ hash, alt }) => {
+  return (
+    <img
+      className={styles.gravatar}
+      height={24}
+      width={24}
+      src={`https://www.gravatar.com/avatar/${hash}?d=retro`}
+      alt={alt}
+      title={alt}
+    />
+  );
+};

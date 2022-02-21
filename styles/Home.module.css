@@ -135,3 +135,9 @@
   border-radius: 100%;
   margin-right: 0.4rem;
 }
+
+.gravatar {
+  border-radius: 100%;
+  display: inline-block;
+  vertical-align: middle;
+}
