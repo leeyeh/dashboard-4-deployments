@@ -60,61 +60,65 @@ export default function Home({ repo }) {
                   } = {},
                 } = deployment;
                 return (
-                  <div className={styles.card} key={name}>
-                    <a href={url} target="_blank">
-                      <h3
-                        style={{ opacity: getOpacity(deployedAt) }}
-                        className={styles.line}
-                      >
-                        {name}
-                        <span className={styles.fill} />
-                        <span className={styles.meta}>
-                          {deployedAt ? (
-                            <>
-                              {author && (
-                                <Gravatar
-                                  hash={author.gravatarhash}
-                                  alt={author.name}
-                                />
-                              )}{" "}
-                              deployed at {`${formatTime(deployedAt)}`}
-                            </>
-                          ) : (
-                            "not deployed"
-                          )}
-                        </span>
-                        &nbsp;&rarr;
-                      </h3>
-                    </a>
-                    {commit && (
-                      <a
-                        href={`https://github.com/${repo}/commits/${sha}`}
-                        target="_blank"
-                      >
-                        <p
-                          style={{ opacity: getOpacity(committedAt) }}
+                  <div className={styles.item} key={name}>
+                    <div className={styles.card}>
+                      <a href={url} target="_blank">
+                        <h3
+                          style={{ opacity: getOpacity(deployedAt) }}
                           className={styles.line}
                         >
-                          <span
-                            className={styles.shaVisaulized}
-                            style={{ background: `#${sha.slice(0, 6)}` }}
-                          ></span>
-                          <span className={styles.sha}>{sha.slice(0, 7)}</span>{" "}
-                          <span>{message}</span>
+                          {name}
                           <span className={styles.fill} />
                           <span className={styles.meta}>
-                            {commitAuthor && (
-                              <Gravatar
-                                hash={commitAuthor.gravatarhash}
-                                alt={commitAuthor.name}
-                              />
-                            )}{" "}
-                            {`committed at ${formatTime(committedAt)}`}
+                            {deployedAt ? (
+                              <>
+                                {author && (
+                                  <Gravatar
+                                    hash={author.gravatarhash}
+                                    alt={author.name}
+                                  />
+                                )}{" "}
+                                deployed at {`${formatTime(deployedAt)}`}
+                              </>
+                            ) : (
+                              "not deployed"
+                            )}
                           </span>
                           &nbsp;&rarr;
-                        </p>
+                        </h3>
                       </a>
-                    )}
+                      {commit && (
+                        <a
+                          href={`https://github.com/${repo}/commits/${sha}`}
+                          target="_blank"
+                        >
+                          <p
+                            style={{ opacity: getOpacity(committedAt) }}
+                            className={styles.line}
+                          >
+                            <span
+                              className={styles.shaVisaulized}
+                              style={{ background: `#${sha.slice(0, 6)}` }}
+                            ></span>
+                            <span className={styles.sha}>
+                              {sha.slice(0, 7)}
+                            </span>{" "}
+                            <span>{message}</span>
+                            <span className={styles.fill} />
+                            <span className={styles.meta}>
+                              {commitAuthor && (
+                                <Gravatar
+                                  hash={commitAuthor.gravatarhash}
+                                  alt={commitAuthor.name}
+                                />
+                              )}{" "}
+                              {`committed at ${formatTime(committedAt)}`}
+                            </span>
+                            &nbsp;&rarr;
+                          </p>
+                        </a>
+                      )}
+                    </div>
                   </div>
                 );
               })}

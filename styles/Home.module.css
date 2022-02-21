@@ -8,7 +8,7 @@
 }
 
 .main {
-  padding: 4rem 0;
+  padding: 1.5rem 0;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -70,12 +70,20 @@
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-  max-width: 800px;
+}
+
+.item {
+  flex-basis: 100%;
+  max-width: 850px;
+  padding: 1rem;
+}
+@media only screen and (min-width: 1280px) {
+  .item {
+    flex-basis: 50%;
+  }
 }
 
 .card {
-  margin: 1rem;
-  flex-basis: 100%;
   padding: 1.5rem;
   text-align: left;
   color: inherit;

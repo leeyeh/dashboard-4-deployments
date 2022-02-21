@@ -110,7 +110,7 @@ export default async (req, res) => {
           commit = {
             committedAt: data.commit.committer.date,
             sha,
-            message: data.commit.message.slice(0, 16) + "...",
+            message: data.commit.message.slice(0, 18) + "...",
             author: {
               gravatarhash: md5(data.commit.author.email),
               name: data.commit.author.name,
