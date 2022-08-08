@@ -1,4 +1,4 @@
-const fetch = require("node-fetch");
+import fetch from "node-fetch";
 const memo = require("memoizee");
 const { Octokit } = require("octokit");
 const md5 = require("md5");
@@ -34,17 +34,19 @@ const LC_TOKENS = {
 const fetchDeployments = memo(
   async (region, appId, groupName) => {
     console.log(`Fetching deployment: ${region}/${appId}/${groupName}`);
-    const data = (
-      await fetch(
-        `https://${LC_API_DOMAINS[region]}/1.1/engine/groups/${groupName}/deployments`,
-        {
-          headers: {
-            Authorization: `Bearer ${LC_TOKENS[region]}`,
-            "X-LC-ID": appId,
-          },
-        }
-      )
-    ).json();
+    const response = await fetch(
+      `https://${LC_API_DOMAINS[region]}/1.1/engine/groups/${groupName}/deployments`,
+      {
+        headers: {
+          Authorization: `Bearer ${LC_TOKENS[region]}`,
+          "X-LC-ID": appId,
+        },
+      }
+    );
+    const data = await response.json();
+    if (response.status > 400) {
+      throw new Error(data.error ?? response.statusText);
+    }
     console.log(`Fetched: ${region}/${appId}/${groupName}`);
     return data;
   },
