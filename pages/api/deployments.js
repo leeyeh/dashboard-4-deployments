@@ -5,6 +5,8 @@ const md5 = require("md5");
 
 const LC_ACCESS_TOKEN = process.env.LC_ACCESS_TOKEN;
 const LC_ACCESS_TOKEN_US = process.env.LC_ACCESS_TOKEN_US;
+const LC_ACCESS_TOKEN_CN_TDS1 = process.env.LC_ACCESS_TOKEN_CN_TDS1;
+const LC_ACCESS_TOKEN_AP_SG = process.env.LC_ACCESS_TOKEN_AP_SG;
 const ENGINE_ENVS = process.env.ENGINE_ENVS;
 const envs = ENGINE_ENVS.split(",").map((env) => env.split("/"));
 console.log(envs);
@@ -18,17 +20,23 @@ const LC_API_DOMAINS = {
   "cn-n1": "cn-n1-console-api.leancloud.cn",
   "cn-e1": "cn-e1-console-api.leancloud.cn",
   "us-w1": "us-w1-console-api.leancloud.app",
+  "cn-tds1": "console-api.cloud.developer.taptap.cn",
+  "ap-sg": "console-api.ap-sg.cloud.developer.taptap.io",
 };
 const LC_CONSOLE_DOMAINS = {
   "cn-n1": "console.leancloud.cn",
   "cn-e1": "console-e1.leancloud.cn",
   "us-w1": "console.leancloud.app",
+  "cn-tds1": "console.cn-tds1.lcops.cn",
+  "ap-sg": "console.ap-sg.lcops.cn",
 };
 
 const LC_TOKENS = {
   "cn-n1": LC_ACCESS_TOKEN,
   "cn-e1": LC_ACCESS_TOKEN,
   "us-w1": LC_ACCESS_TOKEN_US,
+  "cn-tds1": LC_ACCESS_TOKEN_CN_TDS1,
+  "ap-sg": LC_ACCESS_TOKEN_AP_SG,
 };
 
 const fetchDeployments = memo(
